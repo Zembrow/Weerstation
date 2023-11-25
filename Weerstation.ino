@@ -1,13 +1,18 @@
 // Include libraries
 #include <WiFi.h>
+#include <NTPClient.h>
+#include <TimeLib.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME680.h>
 
+// Include environment variables
 #include "env.h"
 
 // Define components
+WiFiUDP NTP; // NTPClient
+NTPClient timeClient(NTP); // NTPClient
 Adafruit_BME680 bme; // BME680-Sensor
 
 // Global variables
@@ -34,6 +39,9 @@ void setup() {
   WiFi.begin(WiFiSSID, WiFiPassword);
   delay(10000);
 
+  // Init NTPClient
+  timeClient.begin();
+
   // Init BME680-sensor
   bme.begin();
 }
@@ -41,6 +49,12 @@ void setup() {
 // Loop-function
 // Function loops continuously 
 void loop() {
+  // Get current date & time
+  // year() month() day() hour() minute() second()
+  timeClient.update();
+  int epochTime = timeClient.getEpochTime();
+  setTime(epochTime);
+
   // Read BME680-sensor
   bme.beginReading();
   delay(50);
@@ -53,8 +67,7 @@ void loop() {
   insideGas = bme.gas_resistance / 1000.0;
 
   // [FOR DEBUGGING ONLY] Print to serial channel
-  //Serial.print(insideTemperature + insideTemperatureUnit + insideHumidity + insideHumidityUnit + insidePressure + insidePressureUnit + insideGas + insideGasUnit);
-  //Serial.println();
+  //Serial.print();
   
   delay(2000);
 }

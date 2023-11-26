@@ -1,8 +1,11 @@
 #ifndef env.h
 #define env.h
 
-// Fill in WiFi SSID & Password
+// WiFi SSID & Password
 String WiFiSSID = "";
 String WiFiPassword = "";
+
+// WeatherAPI API key
+String WeahterAPIKey = "";
 
 #endif

@@ -1,7 +1,9 @@
 // Include libraries
 #include <WiFi.h>
 #include <NTPClient.h>
+#include <HTTPClient.h>
 #include <TimeLib.h>
+#include <ArduinoJson.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
@@ -13,10 +15,25 @@
 // Define components
 WiFiUDP NTP; // NTPClient
 NTPClient timeClient(NTP); // NTPClient
+StaticJsonDocument<1024> weatherForecast; //Weather forecast JSON element
 Adafruit_BME680 bme; // BME680-Sensor
 
 // Global variables
 //
+// WiFi
+String IPURL = "http://api.ipify.org";
+String WeatherAPIURL = "http://api.weatherapi.com/v1/current.json?key=" + WeahterAPIKey + "&q=";
+String publicIP;
+
+// Weather Forecast
+float outsideTemperature;
+const char* outsideCondition;
+float outsidePrecipitation;
+
+// Weather Forecast units
+String outsideTemperatureUnit = "*C";
+String outsidePrecipitationUnit = "mm";
+
 // BME680-sensor readings
 float insideTemperature;
 float insideHumidity;
@@ -42,6 +59,9 @@ void setup() {
   // Init NTPClient
   timeClient.begin();
 
+  // Get WiFi public IP
+  publicIP = HTTPRequest(IPURL);
+
   // Init BME680-sensor
   bme.begin();
 }
@@ -55,6 +75,17 @@ void loop() {
   int epochTime = timeClient.getEpochTime();
   setTime(epochTime);
 
+  // Get current weather & transfrom JSON -> Array
+  String WeatherRequest = HTTPRequest(WeatherAPIURL + publicIP);
+  deserializeJson(weatherForecast, WeatherRequest);
+
+  // Read weather forecast from request
+  JsonObject current = weatherForecast["current"]; // Set correct depth, otherwise ESP will overload
+
+  outsideTemperature = current["temp_c"];
+  outsideCondition = current["condition"]["text"];
+  outsidePrecipitation = current["precip_mm"];
+
   // Read BME680-sensor
   bme.beginReading();
   delay(50);
@@ -67,7 +98,28 @@ void loop() {
   insideGas = bme.gas_resistance / 1000.0;
 
   // [FOR DEBUGGING ONLY] Print to serial channel
-  //Serial.print();
+  //Serial.println();
   
-  delay(2000);
+  delay(10000000);
+}
+
+// HTTP GET Request function
+// Makes API request to an API
+String HTTPRequest(String URL) {
+  // Init
+  HTTPClient http;
+  http.setTimeout(10000);
+
+  // API Request
+  http.begin(URL);
+  http.GET();
+
+  // Get reponse
+  String response = http.getString();
+
+  // Clear request client
+  http.end();
+
+  // Return
+  return response;
 }

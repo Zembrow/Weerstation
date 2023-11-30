@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME680.h>
+#include <TFT_eSPI.h>
 
 // Include environment variables
 #include "env.h"
@@ -17,6 +18,7 @@ WiFiUDP NTP; // NTPClient
 NTPClient timeClient(NTP); // NTPClient
 StaticJsonDocument<1024> weatherForecast; //Weather forecast JSON element
 Adafruit_BME680 bme; // BME680-Sensor
+TFT_eSPI tft = TFT_eSPI(); // LCD screen;
 
 // Global variables
 //
@@ -51,6 +53,9 @@ String insideGasUnit = "KOhms";
 void setup() {
   // [FOR DEBUGGING ONLY] Open serial channel
   Serial.begin(115200);
+
+  // Init LCD screen
+  tft.init();
 
   // Start WiFi connection
   WiFi.begin(WiFiSSID, WiFiPassword);

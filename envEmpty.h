@@ -8,4 +8,10 @@ String WiFiPassword = "";
 // WeatherAPI API key
 String WeahterAPIKey = "";
 
+// MQTT
+String MQTTURL;
+int MQTTPort;
+String MQTTUsername;
+String MQTTPassword;
+
 #endif

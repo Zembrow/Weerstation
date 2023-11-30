@@ -54,7 +54,9 @@ void setup() {
 
   // Start WiFi connection
   WiFi.begin(WiFiSSID, WiFiPassword);
-  delay(10000);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+  }
 
   // Init NTPClient
   timeClient.begin();

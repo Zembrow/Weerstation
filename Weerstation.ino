@@ -136,10 +136,13 @@ void loop() {
   insidePressure = bme.pressure / 100.0;
   insideGas = bme.gas_resistance / 1000.0;
 
+  tft.fillScreen(TFT_BLACK); // Reset screen
+  loadScreen();
+
   // [FOR DEBUGGING ONLY] Print to serial channel
   //Serial.println();
   
-  delay(10000000);
+  delay(60000 - (second() * 1000));
 }
 
 // HTTP GET Request function
@@ -167,4 +170,32 @@ String HTTPRequest(String URL) {
 void updateLoadbar(int percentage) {
   // 192 = 100%
   tft.fillRect(tft.getViewportWidth() / 2 - 100 + 4, tft.getViewportHeight() / 2 + 10 + 4, 1.92 * percentage, 17, TFT_WHITE);
+}
+
+// Load data to screen
+void loadScreen() {
+  // Lines
+  tft.drawLine(tft.getViewportWidth() / 2, 0, tft.getViewportWidth() / 2, tft.getViewportHeight() - 25, TFT_WHITE); // Vertical line
+  tft.drawLine(0, tft.getViewportHeight() - 25, tft.getViewportWidth(), tft.getViewportHeight() - 25, TFT_WHITE); // Bottom horizontal line
+
+  // In- outdoor
+  tft.drawString("IN", 5, 5, 1);;
+  tft.drawRightString("OUT", tft.getViewportWidth() - 5, 5, 1);
+
+  // Date & Time
+  String date = String(day()) + "/" + String(month()) + "/" + String(year());
+  String time = String(hour()) + ":" + String(minute());
+
+  tft.drawCentreString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 20, 1); // Draw date
+  tft.drawCentreString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 20, 1); // Draw time
+
+  // Indoor
+  tft.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6, 1); 
+  tft.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 2, 1);
+  tft.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
+  tft.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
+
+  // Outdoor
+  tft.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 25, 1); 
+  tft.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 50, 1);
 }

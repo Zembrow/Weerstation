@@ -55,22 +55,54 @@ void setup() {
   Serial.begin(115200);
 
   // Init LCD screen
-  tft.init();
+  tft.begin();
+  tft.setRotation(3);
+  tft.invertDisplay(false);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(2);
+  tft.setTextDatum(MC_DATUM);
+
+  // Loadbar
+  tft.drawString("Loading...", tft.getViewportWidth() / 2, tft.getViewportHeight() / 2 - 10 , 2);
+  tft.fillRect(tft.getViewportWidth() / 2 - 100, tft.getViewportHeight() / 2 + 10, 200, 25, TFT_WHITE);
+  tft.fillRect(tft.getViewportWidth() / 2 - 100 + 2, tft.getViewportHeight() / 2 + 10 + 2, 196, 21, TFT_BLACK);
+
+  tft.setTextDatum(TL_DATUM);
 
   // Start WiFi connection
   WiFi.begin(WiFiSSID, WiFiPassword);
+
+  int attempts = 0; // Keep track of # of checks
+
   while (WiFi.status() != WL_CONNECTED) {
+    // After 5s, try to connect again
+    if (attempts == 5) {
+      WiFi.begin(WiFiSSID, WiFiPassword);
+      attempts = 0;
+    }
+
     delay(1000);
+    attempts++;
   }
+
+  updateLoadbar(25);
 
   // Init NTPClient
   timeClient.begin();
 
+  updateLoadbar(50);
+
   // Get WiFi public IP
   publicIP = HTTPRequest(IPURL);
 
+  updateLoadbar(75);
+
   // Init BME680-sensor
   bme.begin();
+
+  updateLoadbar(100);
+  delay(500);
 }
 
 // Loop-function
@@ -129,4 +161,10 @@ String HTTPRequest(String URL) {
 
   // Return
   return response;
+}
+
+// Update the loading-screen bar
+void updateLoadbar(int percentage) {
+  // 192 = 100%
+  tft.fillRect(tft.getViewportWidth() / 2 - 100 + 4, tft.getViewportHeight() / 2 + 10 + 4, 1.92 * percentage, 17, TFT_WHITE);
 }

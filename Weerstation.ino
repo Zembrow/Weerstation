@@ -9,12 +9,15 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME680.h>
 #include <TFT_eSPI.h>
+#include <ArduinoMqttClient.h>
 
 // Include environment variables
 #include "env.h"
 
 // Define components
 WiFiUDP NTP; // NTPClient
+WiFiClient wifiClient; // WiFiClient
+MqttClient mqttClient(wifiClient); // MQTTClient
 NTPClient timeClient(NTP); // NTPClient
 StaticJsonDocument<1024> weatherForecast; //Weather forecast JSON element
 Adafruit_BME680 bme; // BME680-Sensor
@@ -71,44 +74,66 @@ void setup() {
 
   tft.setTextDatum(TL_DATUM);
 
-  // Init sprite
-  sprite.setColorDepth(8);
-  sprite.setTextSize(2);
+  updateLoadbar(14.3); // Update loadbar
 
   // Start WiFi connection
   WiFi.begin(WiFiSSID, WiFiPassword);
 
-  int attempts = 0; // Keep track of # of checks
+  int wifiAttempts = 0; // Keep track of # of checks
 
   while (WiFi.status() != WL_CONNECTED) {
     // After 5s, try to connect again
-    if (attempts == 5) {
+    if (wifiAttempts == 5) {
       WiFi.begin(WiFiSSID, WiFiPassword);
-      attempts = 0;
+      wifiAttempts = 0;
     }
 
     delay(1000);
-    attempts++;
+    wifiAttempts++;
   }
 
-  updateLoadbar(25);
+  updateLoadbar(28.6); // Update loadbar
+
+  // Start MQTT connecting to broker
+  mqttClient.setUsernamePassword(MQTTUsername, MQTTPassword);
+  mqttClient.connect(MQTTURL, MQTTPort);
+
+  int mqttAttempts = 0; // Keep track of # of checks
+
+  while (mqttClient.connected() != true) {
+    // After 5s, try to connect again
+    if (mqttAttempts == 5) {
+      mqttClient.connect(MQTTURL, MQTTPort);
+      mqttAttempts = 0;
+    }
+
+    delay(1000);
+    mqttAttempts++;
+  } 
+
+  updateLoadbar(42.9); // Update loadbar
 
   // Init NTPClient
   timeClient.begin();
 
-  updateLoadbar(50);
+  updateLoadbar(57.1); // Update loadbar
 
   // Get WiFi public IP
   publicIP = HTTPRequest(IPURL);
 
-  updateLoadbar(75);
+  updateLoadbar(71.4);
 
   // Init BME680-sensor
   bme.begin();
 
-  updateLoadbar(100);
+  updateLoadbar(85.7); // Update loadbar
 
+  // Init sprite
+  sprite.setColorDepth(8);
+  sprite.setTextSize(2);
   sprite.createSprite(320, 240);
+
+  updateLoadbar(100); // Update loadbar
 
   delay(500);
 }
@@ -117,7 +142,6 @@ void setup() {
 // Function loops continuously 
 void loop() {
   // Get current date & time
-  // year() month() day() hour() minute() second()
   timeClient.update();
   int epochTime = timeClient.getEpochTime();
   setTime(epochTime);
@@ -144,7 +168,11 @@ void loop() {
   insidePressure = bme.pressure / 100.0;
   insideGas = bme.gas_resistance / 1000.0;
 
+  // Update screen with latest data
   loadScreen();
+
+  // Update MQTT Broker with latest data
+  updateMQTTBroker();
 
   // [FOR DEBUGGING ONLY] Print to serial channel
   //Serial.println();
@@ -211,4 +239,25 @@ void loadScreen() {
   sprite.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 50, 1);
 
   sprite.pushSprite(0, 0);
+}
+
+// Send data to MQTT Broker
+void updateMQTTBroker() {
+  mqttClient.poll(); // MQTTClient keep alive
+
+  // Send all data
+  updateMQTT("Freark/inside/temperature", String(insideTemperature));
+  updateMQTT("Freark/inside/humidity", String(insideHumidity));
+  updateMQTT("Freark/inside/pressure", String(insidePressure));
+  updateMQTT("Freark/inside/gas", String(insideGas));
+  
+  updateMQTT("Freark/outside/temperature", String(outsideTemperature));
+  updateMQTT("Freark/outside/precipitation", String(outsidePrecipitation));
+}
+
+// Create MQTT messages
+void updateMQTT(String topic, String value) {
+  mqttClient.beginMessage(topic, true, 0);
+  mqttClient.print(value);
+  mqttClient.endMessage();
 }

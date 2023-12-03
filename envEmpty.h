@@ -9,7 +9,7 @@ String WiFiPassword = "";
 String WeahterAPIKey = "";
 
 // MQTT
-String MQTTURL;
+const char MQTTURL;
 int MQTTPort;
 String MQTTUsername;
 String MQTTPassword;

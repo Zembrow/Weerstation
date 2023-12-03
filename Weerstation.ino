@@ -19,6 +19,7 @@ NTPClient timeClient(NTP); // NTPClient
 StaticJsonDocument<1024> weatherForecast; //Weather forecast JSON element
 Adafruit_BME680 bme; // BME680-Sensor
 TFT_eSPI tft = TFT_eSPI(); // LCD screen;
+TFT_eSprite sprite = TFT_eSprite(&tft); // Sprite to remove update flicker
 
 // Global variables
 //
@@ -70,6 +71,10 @@ void setup() {
 
   tft.setTextDatum(TL_DATUM);
 
+  // Init sprite
+  sprite.setColorDepth(8);
+  sprite.setTextSize(2);
+
   // Start WiFi connection
   WiFi.begin(WiFiSSID, WiFiPassword);
 
@@ -102,6 +107,9 @@ void setup() {
   bme.begin();
 
   updateLoadbar(100);
+
+  sprite.createSprite(320, 240);
+
   delay(500);
 }
 
@@ -136,7 +144,6 @@ void loop() {
   insidePressure = bme.pressure / 100.0;
   insideGas = bme.gas_resistance / 1000.0;
 
-  tft.fillScreen(TFT_BLACK); // Reset screen
   loadScreen();
 
   // [FOR DEBUGGING ONLY] Print to serial channel
@@ -172,30 +179,36 @@ void updateLoadbar(int percentage) {
   tft.fillRect(tft.getViewportWidth() / 2 - 100 + 4, tft.getViewportHeight() / 2 + 10 + 4, 1.92 * percentage, 17, TFT_WHITE);
 }
 
-// Load data to screen
+// Load data to screen using a sprite
+// Sprites remove update flicker yet use a lot of RAM
 void loadScreen() {
+    
+  sprite.fillScreen(TFT_BLACK); // Reset screen
+
   // Lines
-  tft.drawLine(tft.getViewportWidth() / 2, 0, tft.getViewportWidth() / 2, tft.getViewportHeight() - 25, TFT_WHITE); // Vertical line
-  tft.drawLine(0, tft.getViewportHeight() - 25, tft.getViewportWidth(), tft.getViewportHeight() - 25, TFT_WHITE); // Bottom horizontal line
+  sprite.drawLine(tft.getViewportWidth() / 2, 0, tft.getViewportWidth() / 2, tft.getViewportHeight() - 25, TFT_WHITE); // Vertical line
+  sprite.drawLine(0, tft.getViewportHeight() - 25, tft.getViewportWidth(), tft.getViewportHeight() - 25, TFT_WHITE); // Bottom horizontal line
 
   // In- outdoor
-  tft.drawString("IN", 5, 5, 1);;
-  tft.drawRightString("OUT", tft.getViewportWidth() - 5, 5, 1);
+  sprite.drawString("IN", 5, 5, 1);;
+  sprite.drawRightString("OUT", tft.getViewportWidth() - 5, 5, 1);
 
   // Date & Time
   String date = String(day()) + "/" + String(month()) + "/" + String(year());
   String time = String(hour()) + ":" + String(minute());
 
-  tft.drawCentreString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 20, 1); // Draw date
-  tft.drawCentreString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 20, 1); // Draw time
+  sprite.drawCentreString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 20, 1); // Draw date
+  sprite.drawCentreString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 20, 1); // Draw time
 
   // Indoor
-  tft.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6, 1); 
-  tft.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 2, 1);
-  tft.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
-  tft.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
+  sprite.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6, 1); 
+  sprite.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 2, 1);
+  sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
+  sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
 
   // Outdoor
-  tft.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 25, 1); 
-  tft.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 50, 1);
+  sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 25, 1); 
+  sprite.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 50, 1);
+
+  sprite.pushSprite(0, 0);
 }

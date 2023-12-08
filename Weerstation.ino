@@ -14,6 +14,10 @@
 // Include environment variables
 #include "env.h"
 
+// Include icons
+#include "icons_day.h"
+#include "icons_night.h"
+
 // Define components
 WiFiUDP NTP; // NTPClient
 WiFiClient wifiClient; // WiFiClient
@@ -35,6 +39,9 @@ String publicIP;
 float outsideTemperature;
 const char* outsideCondition;
 float outsidePrecipitation;
+
+// Weather icon forecast
+int forecastIcon;
 
 // Weather Forecast units
 String outsideTemperatureUnit = "*C";
@@ -153,6 +160,8 @@ void loop() {
   // Read weather forecast from request
   JsonObject current = weatherForecast["current"]; // Set correct depth, otherwise ESP will overload
 
+  forecastIcon = current["condition"]["code"];
+
   outsideTemperature = current["temp_c"];
   outsideCondition = current["condition"]["text"];
   outsidePrecipitation = current["precip_mm"];
@@ -234,9 +243,12 @@ void loadScreen() {
   sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
   sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
 
+  // Icon
+  sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, tft.getViewportHeight() / 6, iconNight1258, 64, 64, TFT_WHITE);
+
   // Outdoor
-  sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 25, 1); 
-  sprite.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 50, 1);
+  sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 150, 1); 
+  sprite.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 175, 1);
 
   sprite.pushSprite(0, 0);
 }

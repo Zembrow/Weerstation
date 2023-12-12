@@ -42,6 +42,7 @@ float outsidePrecipitation;
 
 // Weather icon forecast
 int forecastIcon;
+bool forecastIsDay;
 
 // Weather Forecast units
 String outsideTemperatureUnit = "*C";
@@ -58,6 +59,14 @@ String insideTemperatureUnit = "*C";
 String insideHumidityUnit = "%";
 String insidePressureUnit = "hPa";
 String insideGasUnit = "KOhms"; 
+
+struct icon {
+  int reference;
+  bool isDay;
+  const uint8_t *bitmap;
+};
+
+struct icon icons[96];
 
 // Setup-function
 // Function runs once when ESP32 is booted
@@ -80,6 +89,173 @@ void setup() {
   tft.fillRect(tft.getViewportWidth() / 2 - 100 + 2, tft.getViewportHeight() / 2 + 10 + 2, 196, 21, TFT_BLACK);
 
   tft.setTextDatum(TL_DATUM);
+
+  // Data for structure
+  int references[] = {
+    1000,
+    1003,
+    1006,
+    1009,
+    1030,
+    1063,
+    1066,
+    1069,
+    1072,
+    1087,
+    1114,
+    1117,
+    1135,
+    1147,
+    1150,
+    1153,
+    1168,
+    1171,
+    1180,
+    1183,
+    1186,
+    1189,
+    1192,
+    1195,
+    1198,
+    1201,
+    1204,
+    1207,
+    1210,
+    1213,
+    1216,
+    1219,
+    1222,
+    1225,
+    1237,
+    1240,
+    1243,
+    1246,
+    1249,
+    1252,
+    1255,
+    1258,
+    1261,
+    1264,
+    1273,
+    1276,
+    1279,
+    1282};
+
+  // Bitmaps
+  const uint8_t *iconBitmaps[] = {
+    iconDay1000,
+    iconDay1003,
+    iconDay1006,
+    iconDay1009,
+    iconDay1030,
+    iconDay1063,
+    iconDay1066,
+    iconDay1069,
+    iconDay1072,
+    iconDay1087,
+    iconDay1114,
+    iconDay1117,
+    iconDay1135,
+    iconDay1147,
+    iconDay1150,
+    iconDay1153,
+    iconDay1168,
+    iconDay1171,
+    iconDay1180,
+    iconDay1183,
+    iconDay1186,
+    iconDay1189,
+    iconDay1192,
+    iconDay1195,
+    iconDay1198,
+    iconDay1204,
+    iconDay1207,
+    iconDay1210,
+    iconDay1213,
+    iconDay1201,
+    iconDay1216,
+    iconDay1219,
+    iconDay1222,
+    iconDay1225,
+    iconDay1237,
+    iconDay1243,
+    iconDay1255,
+    iconDay1246,
+    iconDay1258,
+    iconDay1240,
+    iconDay1273,
+    iconDay1252,
+    iconDay1261,
+    iconDay1264,
+    iconDay1276,
+    iconDay1282,
+    iconDay1279,
+    iconDay1249,
+    iconNight1000,
+    iconNight1003,
+    iconNight1006,
+    iconNight1009,
+    iconNight1030,
+    iconNight1063,
+    iconNight1066,
+    iconNight1069,
+    iconNight1072,
+    iconNight1087,
+    iconNight1114,
+    iconNight1117,
+    iconNight1135,
+    iconNight1147,
+    iconNight1150,
+    iconNight1153,
+    iconNight1168,
+    iconNight1171,
+    iconNight1180,
+    iconNight1183,
+    iconNight1186,
+    iconNight1189,
+    iconNight1192,
+    iconNight1195,
+    iconNight1198,
+    iconNight1204,
+    iconNight1207,
+    iconNight1210,
+    iconNight1213,
+    iconNight1201,
+    iconNight1216,
+    iconNight1219,
+    iconNight1222,
+    iconNight1225,
+    iconNight1237,
+    iconNight1243,
+    iconNight1255,
+    iconNight1246,
+    iconNight1258,
+    iconNight1240,
+    iconNight1273,
+    iconNight1252,
+    iconNight1261,
+    iconNight1264,
+    iconNight1276,
+    iconNight1282,
+    iconNight1279,
+    iconNight1249};
+
+  // Fill structure
+  bool isDay = true;
+
+  for (int i = 0; i < 2; i++) {
+    for (int y = 0; y < 48; y++) {
+      // WeatherAPI reference
+      icons[y + i].reference = references[y];
+
+      // Is day True/False
+      icons[y + i].isDay = isDay;
+
+      icons[y + i].bitmap = iconBitmaps[y];
+    }
+
+    isDay = false;
+  }
 
   updateLoadbar(14.3); // Update loadbar
 
@@ -243,8 +419,8 @@ void loadScreen() {
   sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
   sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
 
-  // Icon
-  sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, tft.getViewportHeight() / 6, iconNight1258, 64, 64, TFT_WHITE);
+  // icon
+  sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, tft.getViewportHeight() / 6, findIcon(), 64, 64, TFT_WHITE);
 
   // Outdoor
   sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 150, 1); 
@@ -272,4 +448,13 @@ void updateMQTT(String topic, String value) {
   mqttClient.beginMessage(topic, true, 0);
   mqttClient.print(value);
   mqttClient.endMessage();
+}
+
+// Find & return correct icon
+const uint8_t *findIcon() {
+  for (int i = 0; i < 96; i++) {
+    if (icons[i].reference == forecastIcon && icons[i].isDay == forecastIsDay) {
+      return icons[i].bitmap;
+    }
+  }
 }

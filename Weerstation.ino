@@ -414,13 +414,14 @@ void loadScreen() {
   sprite.drawCentreString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 20, 1); // Draw time
 
   // Indoor
-  sprite.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6, 1); 
-  sprite.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 2, 1);
-  sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 3, 1);
-  sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 6 * 4, 1);
+  sprite.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5, 1); 
+  sprite.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 2, 1);
+  sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 3, 1);
+  sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 4, 1);
 
   // icon
-  sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, tft.getViewportHeight() / 6, findIcon(), 64, 64, TFT_WHITE);
+  sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, (tft.getViewportHeight() - 25 - 64) / 5, findIcon(), 64, 64, TFT_WHITE);
+  sprite.drawCentreString(String(outsideCondition), tft.getViewportWidth() / 4 * 3, (tft.getViewportHeight() - 25) / 5 * 2.5, 1);
 
   // Outdoor
   sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 150, 1); 

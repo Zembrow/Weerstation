@@ -242,18 +242,27 @@ void setup() {
   // Fill structure
   bool isDay = true;
 
-  for (int i = 0; i < 2; i++) {
-    for (int y = 0; y < 48; y++) {
-      // WeatherAPI reference
-      icons[y + i].reference = references[y];
+  int y = 0;
 
-      // Is day True/False
-      icons[y + i].isDay = isDay;
+  // Fill struct
+  for (int i = 0; i < 96; i++) {
 
-      icons[y + i].bitmap = iconBitmaps[y];
+    // Reset for night icons
+    if (i == 49) {
+      isDay = false;
+      y = 0;
     }
 
-    isDay = false;
+    // WeatherAPI reference
+    icons[i].reference = references[y];
+
+    // Is day True/False
+    icons[i].isDay = isDay;
+
+    // Icon bitmap
+    icons[i].bitmap = iconBitmaps[i];
+
+    y++;
   }
 
   updateLoadbar(14.3); // Update loadbar

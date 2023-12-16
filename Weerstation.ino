@@ -60,6 +60,7 @@ String insideHumidityUnit = "%";
 String insidePressureUnit = "hPa";
 String insideGasUnit = "KOhms"; 
 
+// Iconlist
 struct icon {
   int reference;
   bool isDay;
@@ -84,11 +85,9 @@ void setup() {
   tft.setTextDatum(MC_DATUM);
 
   // Loadbar
-  tft.drawString("Loading...", tft.getViewportWidth() / 2, tft.getViewportHeight() / 2 - 10 , 2);
+  tft.drawString("LOADING...", tft.getViewportWidth() / 2, tft.getViewportHeight() / 2 - 10);
   tft.fillRect(tft.getViewportWidth() / 2 - 100, tft.getViewportHeight() / 2 + 10, 200, 25, TFT_WHITE);
   tft.fillRect(tft.getViewportWidth() / 2 - 100 + 2, tft.getViewportHeight() / 2 + 10 + 2, 196, 21, TFT_BLACK);
-
-  tft.setTextDatum(TL_DATUM);
 
   // Data for structure
   int references[] = {
@@ -403,29 +402,33 @@ void loadScreen() {
   sprite.drawLine(0, tft.getViewportHeight() - 25, tft.getViewportWidth(), tft.getViewportHeight() - 25, TFT_WHITE); // Bottom horizontal line
 
   // In- outdoor
+  sprite.setTextDatum(TL_DATUM);
+
   sprite.drawString("IN", 5, 5, 1);;
   sprite.drawRightString("OUT", tft.getViewportWidth() - 5, 5, 1);
+
+  sprite.setTextDatum(MC_DATUM);
 
   // Date & Time
   String date = String(day()) + "/" + String(month()) + "/" + String(year());
   String time = String(hour()) + ":" + String(minute());
 
-  sprite.drawCentreString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 20, 1); // Draw date
-  sprite.drawCentreString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 20, 1); // Draw time
+  sprite.drawString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 10);  // Draw date
+  sprite.drawString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 10); // Draw time
 
   // Indoor
-  sprite.drawCentreString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5, 1); 
-  sprite.drawCentreString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 2, 1);
-  sprite.drawCentreString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 3, 1);
-  sprite.drawCentreString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 4, 1);
+  sprite.drawString(String(insideTemperature) + insideTemperatureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5, 1);
+  sprite.drawString(String(insideHumidity) + insideHumidityUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 2, 1);
+  sprite.drawString(String(insidePressure) + insidePressureUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 3, 1);
+  sprite.drawString(String(insideGas) + insideGasUnit, tft.getViewportWidth() / 4, (tft.getViewportHeight() - 25) / 5 * 4, 1);
 
   // icon
   sprite.drawBitmap((tft.getViewportWidth() / 4) * 3 - 32, (tft.getViewportHeight() - 25 - 64) / 5, findIcon(), 64, 64, TFT_WHITE);
-  sprite.drawCentreString(String(outsideCondition), tft.getViewportWidth() / 4 * 3, (tft.getViewportHeight() - 25) / 5 * 2.5, 1);
+  sprite.drawString(String(outsideCondition), tft.getViewportWidth() / 4 * 3, (tft.getViewportHeight() - 25) / 5 * 2.5, 1);
 
   // Outdoor
-  sprite.drawCentreString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 150, 1); 
-  sprite.drawCentreString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 175, 1);
+  sprite.drawString(String(outsideTemperature) + outsideTemperatureUnit, tft.getViewportWidth() / 4 * 3, 150, 1);
+  sprite.drawString(String(outsidePrecipitation) + outsidePrecipitationUnit, tft.getViewportWidth() / 4 * 3, 175, 1);
 
   sprite.pushSprite(0, 0);
 }

@@ -60,6 +60,15 @@ String insideHumidityUnit = "%";
 String insidePressureUnit = "hPa";
 String insideGasUnit = "KOhms"; 
 
+// Date
+String correctedDay;
+String correctedMonth;
+String correctedYear;
+
+// Time
+String correctedHour;
+String correctedMinute;
+
 // Iconlist
 struct icon {
   int reference;
@@ -337,6 +346,15 @@ void loop() {
   int epochTime = timeClient.getEpochTime();
   setTime(epochTime);
 
+  // Date
+  correctedDay = beautifyDateTime(day());
+  correctedMonth = beautifyDateTime(month());
+  correctedYear = beautifyDateTime(year());
+
+  // Time
+  correctedHour = beautifyDateTime(hour());
+  correctedMinute = beautifyDateTime(minute());
+
   // Get current weather & transfrom JSON -> Array
   String WeatherRequest = HTTPRequest(WeatherAPIURL + publicIP);
   deserializeJson(weatherForecast, WeatherRequest);
@@ -419,8 +437,8 @@ void loadScreen() {
   sprite.setTextDatum(MC_DATUM);
 
   // Date & Time
-  String date = String(day()) + "/" + String(month()) + "/" + String(year());
-  String time = String(hour()) + ":" + String(minute());
+  String date = String(correctedDay + "/" + correctedMonth + "/" + correctedYear);
+  String time = String(correctedHour + ":" + correctedMinute);
 
   sprite.drawString(date, tft.getViewportWidth() / 4, tft.getViewportHeight() - 10);  // Draw date
   sprite.drawString(time, tft.getViewportWidth() / 4 * 3, tft.getViewportHeight() - 10); // Draw time
@@ -470,4 +488,12 @@ const uint8_t *findIcon() {
       return icons[i].bitmap;
     }
   }
+}
+
+// Convert date/time to a string and add a 0 if number < 10
+String beautifyDateTime(int number) {
+  if (number < 10)
+    return "0" + String(number);
+
+  return String(number);
 }
